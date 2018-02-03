@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+import subprocess
+import time
+import sys
+import os
+
+
+arg = sys.argv[1]
+navpath = os.path.dirname(os.path.abspath(__file__))
+trigger = "/tmp/navtrigger"
+
+
+def get(cmd):
+    try:
+        return subprocess.check_output(cmd).decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        pass
+
+
+def get_wsdata():
+    wsdata = get(["wmctrl", "-d"])
+    return int([l.split()[0] for l in wsdata.splitlines() if "*" in l][0])
+
+
+def next_ws(arg):
+    curr_ws = get_wsdata()
+    if arg == "next":
+        nxt = str(curr_ws + 1)
+    elif arg == "prev":
+        nxt = str(curr_ws - 1)
+    subprocess.Popen(["wmctrl", "-s", nxt])
+
+
+def get_activename(ws):
+    app = os.path.join(navpath, "visualspace")
+    if not get(["pgrep", "-f", app]):
+        subprocess.Popen([app, str(ws), arg])
+    t = 1
+    while True:
+        front = get(["wmctrl", "-l"])
+        if any(["VP_flash" in front, t >= 10]):
+            break
+        else:
+            time.sleep(0.01)
+        t = t + 1
+
+
+if not os.path.exists(trigger):
+    currws = get_wsdata()
+    next_ws(arg)
+    get_activename(currws)

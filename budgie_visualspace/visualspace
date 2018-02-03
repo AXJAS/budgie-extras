@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+import gi
+gi.require_version('Gdk', '3.0')
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gio, GObject, Gdk
+import cairo
+import subprocess
+import time
+from threading import Thread
+import os
+import sys
+
+
+path = "org.gnome.desktop.wm.preferences"
+key = "num-workspaces"
+settings = Gio.Settings.new(path)
+firstspace = int(sys.argv[1])
+direction = sys.argv[2]
+trigger = "/tmp/navtrigger"
+navpath = os.path.dirname(os.path.abspath(__file__))
+
+
+css_data = """
+.windowbutton {
+  border-width: 0px;
+  border-color: #505050;
+  background-color: #505050;
+  padding: 4px;
+  border-radius: 10px;
+}
+.windowbutton_active {
+  border-width: 0px;
+  padding: 4px;
+  border-radius: 10px;
+}
+"""
+
+
+class Travel(Gtk.Window):
+
+    def __init__(self):
+        Gtk.Window.__init__(self)
+        # window props
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        self.stick()
+        self.set_skip_taskbar_hint(True)
+        self.set_title("VP_flash")
+        self.connect('key-release-event', self.get_key)
+        self.stop = False
+        self.set_default_size(10, 10)
+        self.set_decorated(False)
+        self.set_keep_above(True)
+        # book-keeping of active workspace button
+        self.buttondata = []
+        # transparency
+        screen = self.get_screen()
+        visual = screen.get_rgba_visual()
+        if all([visual, screen.is_composited()]):
+            self.set_visual(visual)
+        self.set_app_paintable(True)
+        self.connect("draw", self.area_draw)
+        # styling
+        self.provider = Gtk.CssProvider.new()
+        self.provider.load_from_data(css_data.encode())
+        self.maingrid = Gtk.Grid()
+        self.maingrid.set_column_spacing(5)
+        self.add(self.maingrid)
+        # initial navigator
+        wsdata1 = self.get_wsdata()
+        self.set_spaces(wsdata1)
+        self.show_all()
+        # thread
+        self.update = Thread(target=self.ui_updater, args=(wsdata1, ))
+        self.update.setDaemon(True)
+        self.update.start()
+
+    def get_key(self, arg, key):
+        wspace = Gdk.keyval_name(key.keyval)
+        if wspace in ["Alt_L", "Control_L"]:
+            self.stop = True
+
+    def add_fromidle(self, data1, data2):
+        GObject.idle_add(
+            self.update_current, data1, data2,
+            priority=GObject.PRIORITY_DEFAULT
+        )
+
+    def ui_updater(self, data):
+        wsdata1 = self.get_wsdata()
+        wsdata2 = wsdata1
+        self.add_fromidle(wsdata1, wsdata2)
+        age = 0
+        firstswitch = True
+
+        while True:
+            time.sleep(0.1)
+            age = age + 1
+            wsdata2 = self.get_wsdata()
+            if wsdata2:
+                if wsdata2 != wsdata1:
+                    age = 0
+                    self.add_fromidle(wsdata1, wsdata2)
+                wsdata1 = wsdata2
+
+            """
+            on a single workspace switch, the navigator disappears after 1 sec.
+            if user presses a second time within a second, the navigator
+            assumes user travels possibly for a longer time, the navigator
+            then waits for key release Control_L/Alt, to close.
+            The navigator sets a time-out for the keypress of .2 sec after
+            closure, to prevent the windowmanager to switch workspace at the
+            exact moment the window is initiated (mutter crashes then).
+            """
+
+            new_ws = wsdata2[0]
+            fs = any([
+                firstspace + 1 == new_ws,
+                firstspace - 1 == new_ws,
+                all([firstspace == 0, direction == "prev"]),
+            ])
+            if not fs:
+                firstswitch = False
+            if any([self.stop, all([age >= 8, firstswitch])]):
+                break
+        Gtk.main_quit()
+
+    def update_current(self, wsdata1, wsdata2):
+        new_ws = wsdata2[0]
+        n_ws = wsdata2[1]
+        # add new button if at the end of the row if last
+        if new_ws == n_ws - 1:
+            settings.set_int(key, n_ws + 1)
+            newbutton = self.create_button()
+            context = newbutton[1]
+            context.add_class("windowbutton")
+            self.set_stylecontext(context)
+            self.maingrid.attach(newbutton[0], n_ws + 1, 0, 1, 1)
+        elif n_ws < len(self.buttondata):
+            remove = self.buttondata[n_ws:]
+            for b in remove:
+                b[0].destroy()
+            self.buttondata = self.buttondata[:n_ws]
+        # update styling
+        for n in range(n_ws):
+            try:
+                subj = self.buttondata[n]
+            except IndexError:
+                pass
+            else:
+                context = subj[1]
+                context.remove_class(Gtk.STYLE_CLASS_SUGGESTED_ACTION)
+                context.remove_class("windowbutton_active")
+                context.remove_class("windowbutton")
+                if n == new_ws:
+                    context.add_class("windowbutton_active")
+                    context.add_class(Gtk.STYLE_CLASS_SUGGESTED_ACTION)
+                else:
+                    context.add_class("windowbutton")
+                self.set_stylecontext(context)
+        self.maingrid.show_all()
+        self.resize(10, 10)
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+
+    def get_wsdata(self):
+        try:
+            wsdata = subprocess.check_output(
+                ["wmctrl", "-d"]
+            ).decode("utf-8").splitlines()
+        except subprocess.CalledProcessError:
+            pass
+        else:
+            return [int([
+                l.split()[0] for l in wsdata if "*" in l
+            ][0]), len(wsdata)]
+
+    def area_draw(self, widget, cr):
+        # set transparent
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        cr.paint()
+        cr.set_operator(cairo.OPERATOR_OVER)
+
+    def create_button(self):
+        newbutton = Gtk.Button()
+        newbutton.set_size_request(120, 70)
+        newbuttoncontext = newbutton.get_style_context()
+        self.buttondata.append([newbutton, newbuttoncontext])
+        return newbutton, newbuttoncontext
+
+    def set_stylecontext(self, context):
+        Gtk.StyleContext.add_provider(
+            context, self.provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+    def set_spaces(self, data):
+        # create initial representation
+        positions = data[1]
+        currws = data[0]
+        for n in range(positions):
+            b = self.create_button()
+            context = b[1]
+            button = b[0]
+            if n == currws:
+                context.add_class(Gtk.STYLE_CLASS_SUGGESTED_ACTION)
+                context.add_class("windowbutton_active")
+            else:
+                context.add_class("windowbutton")
+            self.set_stylecontext(context)
+            self.maingrid.attach(button, n, 0, 1, 1)
+        self.maingrid.show_all()
+
+
+Travel()
+GObject.threads_init()
+Gtk.main()
+
+# setting .2 sec time out
+subprocess.Popen(os.path.join(navpath, "navtrigger.sh"))
