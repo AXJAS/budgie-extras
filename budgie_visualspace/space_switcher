@@ -18,12 +18,13 @@ def get(cmd):
 
 
 def get_wsdata():
-    wsdata = get(["wmctrl", "-d"])
-    return int([l.split()[0] for l in wsdata.splitlines() if "*" in l][0])
+    wsdata = get(["wmctrl", "-d"]).splitlines()
+    return [
+        int([l.split()[0] for l in wsdata if "*" in l][0]), len(wsdata)
+    ]
 
 
-def next_ws(arg):
-    curr_ws = get_wsdata()
+def next_ws(arg, curr_ws):
     if arg == "next":
         nxt = str(curr_ws + 1)
     elif arg == "prev":
@@ -45,7 +46,20 @@ def get_activename(ws):
         t = t + 1
 
 
+data = get_wsdata()
+currws = data[0]
+
+
 if not os.path.exists(trigger):
-    currws = get_wsdata()
-    next_ws(arg)
+    next_ws(arg, currws)
     get_activename(currws)
+
+
+
+
+
+
+
+
+
+    
