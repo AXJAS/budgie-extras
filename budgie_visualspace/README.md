@@ -1,12 +1,12 @@
-This is the test version of the dynamic workspaces backgrounder and the visualizer.
+This is the test version of the dynamic workspaces backgrounder and the visualizer. All files should be in one and the same directory.
 
-# To run
-The backgrounder (dynamic_spaces) needs to run in the background separately. Subsequently, edit the shortcuts Control_L + Alt + left/right to run the space_switcher with the arguments next or prev (= next/previous).
+- The backgrounder (dynamic_spaces) needs to run in the background separately.
+- Subsequently, edit the shortcuts Control_L + Alt + left/right to run the space_switcher with the arguments next or prev (= next/previous).
 
-# Comments
-When space_switcher is called a single time, it calls visualspace, which terminates after 0.8 (I believe) seconds, unless within .8 second space_switcher is called a second time. It then assumes user is "on tour" through the workspaces and then waits for key release (Ctrl/Alt).
+# Behaviour
+When space_switcher is called with a keypress, immediately released, the navigator shows on the new workspace and immediately terminates itself (within 0.4 sec) (more or less similar to how Unity behaves)
 
-After termination, the visualspace sets a time out for new calls of .2 seconds (creating a trigger file for space_switcher), to prevent mutter to crash.
+If called, keeping Ctrl + Alt pressed, the navigator terminates on key release Ctrl/Alt event. While keeping pressed left/right arrow will browse through the workspaces.
 
-Seems a complicated setup, but it seems to work as a workaround for what seems to be a mutter bug.
+The space switcher can be used with or without the backgrounder. If called with, it adds a workspace at the end of the row if necessary. Once per 5 seconds, unused workspaces are cleaned up.
 

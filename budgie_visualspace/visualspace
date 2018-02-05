@@ -46,7 +46,9 @@ class Travel(Gtk.Window):
         self.set_skip_taskbar_hint(True)
         self.set_title("VP_flash")
         self.connect('key-release-event', self.get_key)
+        self.connect('key-press-event', self.end_first)
         self.stop = False
+        self.first_switch = None
         self.set_default_size(10, 10)
         self.set_decorated(False)
         self.set_keep_above(True)
@@ -79,18 +81,44 @@ class Travel(Gtk.Window):
         if wspace in ["Alt_L", "Control_L"]:
             self.stop = True
 
+    def end_first(self, arg, key):
+        wspace = Gdk.keyval_name(key.keyval)
+        if wspace in ["Left", "Right"]:
+            self.first_switch = False
+
     def add_fromidle(self, data1, data2):
         GObject.idle_add(
             self.update_current, data1, data2,
             priority=GObject.PRIORITY_DEFAULT
         )
 
+    def key_checker(self):
+        # check if keys are in a pressed state
+        exclude = ["Button", "Virtual", "pointer"]
+        keyboards = [
+            k for k in subprocess.check_output([
+                "xinput", "--list"
+            ]).decode("utf-8").strip().splitlines()
+            if not any([s in k for s in exclude])
+        ]
+        dev_ids = [[
+            s.split("=")[1] for s in k.split() if "id=" in s
+        ][0] for k in keyboards]
+        match = False
+        for d in dev_ids:
+            if "down" in subprocess.check_output([
+                "xinput", "--query-state", d,
+            ]).decode("utf-8"):
+                match = True
+                break
+        return match
+
     def ui_updater(self, data):
         wsdata1 = self.get_wsdata()
         wsdata2 = wsdata1
         self.add_fromidle(wsdata1, wsdata2)
         age = 0
-        firstswitch = True
+        self.first_switch = False if self.key_checker() else True
 
         while True:
             time.sleep(0.1)
@@ -98,29 +126,11 @@ class Travel(Gtk.Window):
             wsdata2 = self.get_wsdata()
             if wsdata2:
                 if wsdata2 != wsdata1:
-                    age = 0
                     self.add_fromidle(wsdata1, wsdata2)
                 wsdata1 = wsdata2
-
-            """
-            on a single workspace switch, the navigator disappears after 1 sec.
-            if user presses a second time within a second, the navigator
-            assumes user travels possibly for a longer time, the navigator
-            then waits for key release Control_L/Alt, to close.
-            The navigator sets a time-out for the keypress of .2 sec after
-            closure, to prevent the windowmanager to switch workspace at the
-            exact moment the window is initiated (mutter crashes then).
-            """
-
-            new_ws = wsdata2[0]
-            fs = any([
-                firstspace + 1 == new_ws,
-                firstspace - 1 == new_ws,
-                all([firstspace == 0, direction == "prev"]),
-            ])
-            if not fs:
-                firstswitch = False
-            if any([self.stop, all([age >= 8, firstswitch])]):
+            if any([
+                all([self.first_switch, age >= 4]), self.stop,
+            ]):
                 break
         Gtk.main_quit()
 
