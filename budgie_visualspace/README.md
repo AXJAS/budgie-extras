@@ -1,4 +1,4 @@
-This is the test version of the dynamic workspaces backgrounder and the visualizer. All files should be in one and the same directory.
+This is the test version of the dynamic workspaces- and the visualizer script. All files should be in one and the same directory.
 
 Edit the shortcuts Control_L + Alt + left/right to run the space_switcher with the arguments next or prev (= next/previous).
 
