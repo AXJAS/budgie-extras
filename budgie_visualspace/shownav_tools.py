@@ -7,9 +7,10 @@ from gi.repository import Gio
 
 navpath = os.path.dirname(os.path.abspath(__file__))
 navigator = os.path.join(navpath, "shownav")
-shownav_busy = "/tmp/shownav_busy"
-shownav_right = "/tmp/shownav_right"
-shownav_left = "/tmp/shownav_left"
+user = os.environ["USER"]
+shownav_busy = "/tmp/" + user + "_shownav_busy"
+shownav_right = "/tmp/" + user + "_shownav_right"
+shownav_left = "/tmp/" + user + "_shownav_left"
 
 
 path = "org.gnome.desktop.wm.preferences"

@@ -48,7 +48,8 @@ def remote_control(direction):
 
 if __name__ == "__main__":
     if not any([
-        st.get(["pgrep", "-f", navigator]), os.path.exists(st.shownav_busy)
+        st.get(["pgrep", "-f", "-u", st.user, navigator]),
+        os.path.exists(st.shownav_busy),
     ]):
         initiate_shownav()
     else:
