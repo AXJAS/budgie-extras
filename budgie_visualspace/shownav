@@ -66,6 +66,7 @@ class VisualSpace(Gtk.Window):
         self.add(self.maingrid)
         # book-keeping
         self.buttondata = []
+        self.age = 0
         # transparency
         screen = self.get_screen()
         visual = screen.get_rgba_visual()
@@ -90,6 +91,7 @@ class VisualSpace(Gtk.Window):
         else:
             while True:
                 time.sleep(0.05)
+                self.age = self.age + 1
                 for d in [
                     [shownav_right, "Right"], [shownav_left, "Left"],
                 ]:
@@ -104,6 +106,8 @@ class VisualSpace(Gtk.Window):
     def act_on_keyrelease(self, arg, released):
         key = Gdk.keyval_name(released.keyval)
         if key in ["Control_L", "Alt_L"]:
+            if self.age < 8:
+                time.sleep(0.4 - (self.age * 0.05))
             Gtk.main_quit()
 
     def navigate(self, key):
