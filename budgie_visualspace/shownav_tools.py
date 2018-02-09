@@ -13,10 +13,14 @@ shownav_right = "/tmp/" + user + "_shownav_right"
 shownav_left = "/tmp/" + user + "_shownav_left"
 
 
+# n-worspaces settings
 path = "org.gnome.desktop.wm.preferences"
 key = "num-workspaces"
 settings = Gio.Settings.new(path)
-dynamic = True
+
+
+# visualspace settings
+visual = Gio.Settings.new("org.ubuntubudgie.visualspace")
 
 
 def get(cmd):

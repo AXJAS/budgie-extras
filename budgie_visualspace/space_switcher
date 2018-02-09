@@ -15,11 +15,12 @@ navigator = st.navigator
 shownav_busy = st.shownav_busy
 shownav_right = st.shownav_right
 shownav_left = st.shownav_left
-dynamic = st.dynamic
 
 
 key = st.key
 settings = st.settings
+# show-visual settings
+showvisual = st.visual.get_boolean("show-visual")
 
 
 def initiate_shownav():
@@ -30,14 +31,15 @@ def initiate_shownav():
     # n-workspaces
     n = curr_state[1]
     # if at the end of the row, add one
-    if all([dynamic, direction == "next", curr == n]):
+    if all([showvisual, direction == "next", curr == n]):
         st.settings.set_int(key, n + 1)
         add = 1
         time.sleep(0.2)
     # set target, 1 is minimum
     target = curr + 1 if direction == "next" else max(curr - 1, 1)
     # run navigator args = targeted workspace, (most recent) n- workspaces
-    subprocess.Popen([navigator, str(target), str(n + add)])
+    if showvisual:
+        subprocess.Popen([navigator, str(target), str(n + add)])
     subprocess.Popen(["wmctrl", "-s", str(target - 1)])
 
 
