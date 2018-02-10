@@ -1,6 +1,6 @@
 This is the test version of the dynamic workspaces- and the visualizer script. All files should be in one and the same directory.
 
-#Preparation
+# Preparation
 - Copy all files into one and the same directory
 - Copy org.ubuntubudgie.visualspace.gschema.xml to /usr/share/glib-2.0/schemas/
 - Run sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
