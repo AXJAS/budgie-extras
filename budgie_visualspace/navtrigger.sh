@@ -1,7 +1,7 @@
 #!/bin/bash
 
-f='/tmp/shownav_busy'
+f='/tmp/'$USER'_shownav_busy'
 
 touch "$f"
-sleep 0.25
+sleep 0.2
 rm "$f"
