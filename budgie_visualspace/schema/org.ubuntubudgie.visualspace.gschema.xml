@@ -8,7 +8,7 @@
             <default>true</default>
         </key>
         <key type="i" name="min-nworkspaces">
-            <summary>Set minimum number of workspaces for use with visualization</summary>
+            <summary>Set minimum number of workspaces</summary>
             <description>The minimum number of workspaces that should be available</description>
             <default>4</default>
         </key>
