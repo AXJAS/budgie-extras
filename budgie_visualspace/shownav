@@ -235,5 +235,5 @@ GObject.threads_init()
 Gtk.main()
 
 
-# setting .25 sec time out
+# setting .2 sec time out
 subprocess.Popen(os.path.join(st.navpath, "navtrigger.sh"))
