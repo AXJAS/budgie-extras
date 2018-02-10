@@ -10,6 +10,7 @@
         <key type="i" name="min-nworkspaces">
             <summary>Set minimum number of workspaces</summary>
             <description>The minimum number of workspaces that should be available</description>
+	    <range min="1" max="12"/>
             <default>4</default>
         </key>
     </schema>
