@@ -142,7 +142,6 @@ class VisualSpace(Gtk.Window):
         time.sleep(0.1)
         subprocess.Popen(["wmctrl", "-s", target])
         self.resize(10, 10)
-        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
     def cleanup(self):
         wdata = max([
