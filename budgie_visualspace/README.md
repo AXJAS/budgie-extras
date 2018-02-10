@@ -2,10 +2,18 @@ This is the test version of the dynamic workspaces- and the visualizer script. A
 
 # Preparation
 - Copy all files into one and the same directory
-- Copy org.ubuntubudgie.visualspace.gschema.xml to /usr/share/glib-2.0/schemas/
-- Run sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+- Copy `org.ubuntubudgie.visualspace.gschema.xml` to `/usr/share/glib-2.0/schemas/`
+- Run `sudo glib-compile-schemas /usr/share/glib-2.0/schemas/`
 
-Edit the shortcuts Control_L + Alt + left/right to run the visualspace with the arguments next or prev (= next/previous). Alternatively, for testing, you could of course create a few other temporary shortcuts.
+Edit the shortcuts Control_L + Alt + left/right to run the visualspace with the arguments next or prev (= next/previous). 
+
+`/path/to/visualspace next`
+
+and
+
+`/path/to/visualspace prev`
+
+Alternatively, for testing, you could of course create a few other temporary shortcuts.
 
 # Behaviour
 When space_switcher is called with a keypress, immediately released, the navigator shows on the new workspace and immediately terminates itself (within 0.4 sec) (more or less similar to how Unity behaves)
