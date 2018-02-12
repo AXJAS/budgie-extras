@@ -3,8 +3,9 @@
 arg=$1
 dr=`dirname $0`
 f=$dr'/space_switcher'
+user=$USER
 
-if ! pgrep -f $f && ! [ -e '/tmp/'$USER'_shownav_busy' ]
+if ! pgrep -f -u $user $f && ! [ -e '/tmp/'$user'_shownav_busy' ]
 then
 $f $arg
 fi
