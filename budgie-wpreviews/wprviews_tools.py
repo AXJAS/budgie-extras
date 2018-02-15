@@ -71,9 +71,9 @@ def getkey():
 
 def get_area():
     # width of the primary screen.
-    scr = Gdk.Screen().get_default()
-    curr = scr.get_primary_monitor()
-    return scr.get_monitor_geometry(curr).width
+    dsp = Gdk.Display().get_default()
+    prim = dsp.get_primary_monitor()
+    return prim.get_geometry().width
 
 
 def get(cmd):
