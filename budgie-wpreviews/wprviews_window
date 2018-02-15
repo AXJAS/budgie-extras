@@ -137,8 +137,6 @@ class PreviewsWin(Gtk.Window):
         self.provider = Gtk.CssProvider.new()
         self.provider.load_from_data(css_data.encode())
         self.set_decorated(False)
-        # self.connect("focus-out-event", self.stop)
-        # self.connect("key-press-event", self.get_key)
         self.connect("key-release-event", self.get_key)
         self.connect("destroy", Gtk.main_quit)
         self.set_position(Gtk.WindowPosition.CENTER)
