@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import gi
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gdk
+
 
 """
 Budgie WindowPreviews
@@ -66,13 +70,10 @@ def getkey():
 
 
 def get_area():
-    # size of the primary screen. Too bad we can't use wmctrl. xrandr is slower
-    windata = get("xrandr")
-    if windata:
-        windata = windata.split()
-        return int(windata[windata.index("primary") + 1].split("x")[0])
-    else:
-        return 1800
+    # width of the primary screen.
+    scr = Gdk.Screen().get_default()
+    curr = scr.get_primary_monitor()
+    return scr.get_monitor_geometry(curr).width
 
 
 def get(cmd):
