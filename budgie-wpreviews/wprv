@@ -1,0 +1,15 @@
+#!/bin/bash
+
+dr=`dirname $0`
+user=$USER
+arg=$1
+f=$dr'/wprviews_window'
+trg='/tmp/'$user'_wprviews_trigger'
+echo $trg
+
+if ! pgrep -f $f
+then
+$f $arg&
+else
+touch $trg
+fi

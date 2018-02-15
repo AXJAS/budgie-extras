@@ -21,7 +21,7 @@ dcpath = "/com/solus-project/budgie-panel/applets/"
 plugin_path = os.path.dirname(os.path.abspath(__file__))
 
 user = os.environ["USER"]
-previews_dir = os.path.join("/tmp")
+previews_dir = "/tmp"
 settings_dir = os.path.join(
     os.environ["HOME"], ".config", "budgie-extras", "previews"
 )
@@ -32,6 +32,7 @@ previews = os.path.join(
 )
 
 previews_ismuted = os.path.join(settings_dir, "muted")
+temp_history = os.path.join(previews_dir, user + "_focus_history")
 
 for dr in [previews_dir, previews, settings_dir]:
     try:
