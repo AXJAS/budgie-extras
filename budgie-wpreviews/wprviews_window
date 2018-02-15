@@ -170,9 +170,9 @@ class PreviewsWin(Gtk.Window):
         self.curr_row = Gtk.Grid()
         self.curr_row.set_column_spacing(20)
         self.maingrid.attach(self.curr_row, 0, 0, 1, 1)
-        self.previous = self.get_previous()
         # get possible previously active window
         active = self.get_curractive()
+        self.previous = self.get_previous(active)
         open(temp_history, "wt").write(active)
         active = self.previous or active
         self.focussed = None
@@ -229,13 +229,16 @@ class PreviewsWin(Gtk.Window):
         self.show_all()
         self.set_keep_above(True)
 
-    def get_previous(self):
+    def get_previous(self, active):
         try:
             prev = open(temp_history).read().strip()
         except FileNotFoundError:
             pass
         else:
-            return prev if prev in [w[0] for w in wins] else None
+            return prev if all([
+                prev in [w[0] for w in wins],
+                prev != active,
+            ]) else None
 
     def setfocus(self, nf=False):
         self.curr_focus = self.curr_focus + 1
