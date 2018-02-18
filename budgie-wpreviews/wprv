@@ -2,14 +2,14 @@
 
 dr=`dirname $0`
 user=$USER
-arg=$1
+arg1=$1
+arg2=$2
 f=$dr'/wprviews_window'
 trg='/tmp/'$user'_wprviews_trigger'
-echo $trg
 
 if ! pgrep -f $f
 then
-$f $arg&
+$f $arg1 $arg2&
 else
 touch $trg
 fi

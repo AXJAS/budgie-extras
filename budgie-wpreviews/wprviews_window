@@ -137,6 +137,9 @@ class PreviewsWin(Gtk.Window):
         self.provider = Gtk.CssProvider.new()
         self.provider.load_from_data(css_data.encode())
         self.set_decorated(False)
+        self.nokeys = "nokeys" in args
+        if self.nokeys:
+            self.connect("focus-out-event", self.stop)
         self.connect("key-release-event", self.get_key)
         self.connect("destroy", Gtk.main_quit)
         self.set_position(Gtk.WindowPosition.CENTER)
@@ -171,7 +174,10 @@ class PreviewsWin(Gtk.Window):
         # get possible previously active window
         active = self.get_curractive()
         self.previous = self.get_previous(active)
-        open(temp_history, "wt").write(active)
+        try:
+            open(temp_history, "wt").write(active)
+        except TypeError:
+            pass
         active = self.previous or active
         self.focussed = None
         # create rows
@@ -269,12 +275,12 @@ class PreviewsWin(Gtk.Window):
         key release
         """
         newfocus = self.setfocus(nf=True)
-        first = True
+        first = True if not self.nokeys else False
         while True:
             time.sleep(0.1)
             if first:
                 if not self.key_checker():
-                    # try/except for if no windows on workspace
+                    # try/except, in case no windows on workspace
                     try:
                         self.activate(newfocus[1])
                     except TypeError:
@@ -293,12 +299,14 @@ class PreviewsWin(Gtk.Window):
 
     def get_key(self, button, val):
         # keybinding to close the previews
-        if Gdk.keyval_name(val.keyval) == "Alt_L":
-            try:
-                w = self.buttondata[self.curr_focus][1]
-                self.activate(w)
-            except IndexError:
-                pass
+        key = "Escape" if self.nokeys else "Alt_L"
+        if Gdk.keyval_name(val.keyval) == key:
+            if not self.nokeys:
+                try:
+                    w = self.buttondata[self.curr_focus][1]
+                    self.activate(w)
+                except IndexError:
+                    pass
             self.stop()
 
     def change_onenter(self, button, event, target, image):
@@ -313,7 +321,10 @@ class PreviewsWin(Gtk.Window):
 
     def show_other(self, button, nxt):
         # call the external script to move to the other workspace
-        subprocess.Popen((os.path.join(plugin_path, "moveto.sh"), str(nxt)))
+        add = "nokeys" if self.nokeys else ""
+        subprocess.Popen(
+            [os.path.join(plugin_path, "moveto.sh"), str(nxt), add]
+        )
         self.stop()
 
     def set_crosswspaces(self):
@@ -585,7 +596,6 @@ keyexists = pv.getkey()
 
 if all([wins is not None, keyexists, not muted]):
     n_wins = len(wins)
-    # print(wins)
     if show_allwins:
         run_previews()
     else:

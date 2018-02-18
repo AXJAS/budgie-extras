@@ -3,7 +3,7 @@ import os
 import subprocess
 import gi
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk
+from gi.repository import Gdk, Gio
 
 
 """
@@ -23,6 +23,8 @@ program.  If not, see <http://www.gnu.org/licenses/>.
 
 dcpath = "/com/solus-project/budgie-panel/applets/"
 plugin_path = os.path.dirname(os.path.abspath(__file__))
+shortc_settings = Gio.Settings.new("org.ubuntubudgie.plugins.budgie-wpreviews")
+
 
 user = os.environ["USER"]
 previews_dir = "/tmp"
@@ -48,6 +50,7 @@ ignore = [
     "= _NET_WM_WINDOW_TYPE_DOCK",
     "= _NET_WM_WINDOW_TYPE_DESKTOP",
 ]
+
 
 # default resize is v_size, unless w exceeds threshold
 max_w = 260
