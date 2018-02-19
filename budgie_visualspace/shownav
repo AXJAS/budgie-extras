@@ -64,7 +64,7 @@ css_data = """
 class VisualSpace(Gtk.Window):
 
     def __init__(self):
-        Gtk.Window.__init__(self)
+        Gtk.Window.__init__(self, title="ws_visualizer")
         # window properties
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         self.stick()
@@ -73,6 +73,7 @@ class VisualSpace(Gtk.Window):
         self.set_decorated(False)
         self.connect("destroy", Gtk.main_quit)
         self.connect("key-release-event", self.act_on_keyrelease)
+        self.connect("focus-out-event", self.always_above)
         self.maingrid = Gtk.Grid()
         self.maingrid.set_column_spacing(4)
         self.add(self.maingrid)
@@ -95,6 +96,12 @@ class VisualSpace(Gtk.Window):
         self.timer.setDaemon(True)
         self.timer.start()
 
+    def always_above(self, *args):
+        try:
+            subprocess.Popen(["wmctrl", "-a", "ws_visualizer"])
+        except subprocess.CalledProcessError:
+            pass
+
     def wait(self):
         if not self.key_checker():
             time.sleep(0.4)
@@ -102,7 +109,7 @@ class VisualSpace(Gtk.Window):
         else:
             while True:
                 time.sleep(0.05)
-                self.age = self.age + 1
+                self.age = self .age + 1
                 for d in [
                     [shownav_right, "Right"], [shownav_left, "Left"],
                 ]:
