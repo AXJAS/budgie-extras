@@ -131,15 +131,16 @@ temp_history = pv.temp_history
 class PreviewsWin(Gtk.Window):
 
     def __init__(self):
-        Gtk.Window.__init__(self, title="PrVflash")
+        Gtk.Window.__init__(self, title="PrVflash_prvwin")
         self.shapers = []
         # window props, bindings
         self.provider = Gtk.CssProvider.new()
         self.provider.load_from_data(css_data.encode())
         self.set_decorated(False)
         self.nokeys = "nokeys" in args
-        if self.nokeys:
-            self.connect("focus-out-event", self.stop)
+        ###
+        self.connect("focus-out-event", self.on_focus_out)
+        ###
         self.connect("key-release-event", self.get_key)
         self.connect("destroy", Gtk.main_quit)
         self.set_position(Gtk.WindowPosition.CENTER)
@@ -232,6 +233,18 @@ class PreviewsWin(Gtk.Window):
         self.maingrid.show_all()
         self.show_all()
         self.set_keep_above(True)
+
+    def on_focus_out(self, *args):
+        if self.nokeys:
+            self.stop()
+        else:
+            self.always_above()
+
+    def always_above(self, *args):
+        try:
+            subprocess.Popen(["wmctrl", "-a", "PrVflash_prvwin"])
+        except subprocess.CalledProcessError:
+            pass
 
     def get_previous(self, active):
         try:
